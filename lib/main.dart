@@ -8,7 +8,6 @@ import 'package:path/path.dart' as path;
 import 'ios_camera_helper.dart';
 
 void main() async {
-  // 確保 Flutter 綁定初始化
   WidgetsFlutterBinding.ensureInitialized();
 
   final iPhoneCameras = await IOSCameraHelper.getCameraList();
@@ -21,20 +20,7 @@ void main() async {
     print('------------------');
   }
 
-  // 取得所有可用的相機
   final cameras = await availableCameras();
-
-  // 印出所有相機資訊
-  // print('\n=== 可用相機清單 ===');
-  // for (var i = 0; i < cameras.length; i++) {
-  //   print('\n相機 #$i:');
-  //   print('名稱: ${cameras[i].name}');
-  //   print('鏡頭方向: ${cameras[i].lensDirection.toString()}');
-  //   print('感測器方向: ${cameras[i].sensorOrientation}度');
-  // }
-  // print('\n==================\n');
-
-  await checkCameraZoomLevels(cameras);
 
   runApp(
     MaterialApp(
@@ -43,7 +29,6 @@ void main() async {
   );
 }
 
-// **檢查相機的最小縮放等級**
 Future<void> checkCameraZoomLevels(List<CameraDescription> cameras) async {
   for (var camera in cameras) {
     final controller = CameraController(camera, ResolutionPreset.medium);
@@ -54,17 +39,8 @@ Future<void> checkCameraZoomLevels(List<CameraDescription> cameras) async {
       double minZoom = await controller.getMinZoomLevel();
       double maxZoom = await controller.getMaxZoomLevel();
 
-      // print('相機: ${camera.name}');
-      // print('最小可用縮放: $minZoom');
-      // print('最大可用縮放: $maxZoom');
-      // print('------------------');
-
       await controller.dispose();
 
-      // **判斷哪顆是超廣角鏡頭**
-      if (minZoom == 0.5) {
-        print('✅ 找到超廣角鏡頭: ${camera.name}');
-      }
     } catch (e) {
       print('⚠️ 讀取相機縮放資訊時發生錯誤: $e');
     }
@@ -89,7 +65,6 @@ class _CameraAppState extends State<CameraApp> {
   double _currentZoom = 1.0;
   double _baseZoom = 1.0;
 
-  // 目前選擇的相機索引
   int _selectedCameraIndex = 0;
 
   @override
@@ -98,7 +73,6 @@ class _CameraAppState extends State<CameraApp> {
     _initializeCamera(_selectedCameraIndex);
   }
 
-  // 初始化相機
   Future<void> _initializeCamera(int cameraIndex) async {
     final CameraController cameraController = CameraController(
       widget.cameras[cameraIndex],
@@ -122,7 +96,6 @@ class _CameraAppState extends State<CameraApp> {
     }
   }
 
-  // 切換相機鏡頭
   void _switchCamera() {
     setState(() {
       _selectedCameraIndex = (_selectedCameraIndex + 1) % widget.cameras.length;
@@ -131,7 +104,6 @@ class _CameraAppState extends State<CameraApp> {
     _initializeCamera(_selectedCameraIndex);
   }
 
-  // 調整縮放
   Future<void> _setZoomLevel(double zoom) async {
     if (!_controller.value.isInitialized) return;
 
@@ -145,20 +117,16 @@ class _CameraAppState extends State<CameraApp> {
     }
   }
 
-  // 拍照
   Future<void> _takePicture() async {
     if (!_controller.value.isInitialized) return;
 
     try {
-      // 取得暫存目錄路徑
       final Directory tempDir = await getTemporaryDirectory();
       final String tempPath = tempDir.path;
 
-      // 產生檔案名稱
       final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
       final String filePath = path.join(tempPath, fileName);
 
-      // 拍照並儲存
       final XFile photo = await _controller.takePicture();
       await photo.saveTo(filePath);
 
@@ -194,7 +162,6 @@ class _CameraAppState extends State<CameraApp> {
           Center(
             child: CameraPreview(_controller),
           ),
-
           // 縮放滑桿
           Positioned(
             bottom: 120,
@@ -207,8 +174,6 @@ class _CameraAppState extends State<CameraApp> {
               onChanged: _setZoomLevel,
             ),
           ),
-
-          // 控制按鈕
           Positioned(
             bottom: 30,
             left: 0,
